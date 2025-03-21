@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery PLUTON - Registro de Delivery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos generales y apariencia mejorada */
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #444;
+        }
+
+        /* Encabezado con el logo */
+        .header {
+            width: 100%;
+            background-color: #333;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header img {
+            max-height: 60px;
+        }
+
+        /* Contenedor principal */
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #555;
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 30px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        label {
+            font-weight: bold;
+            color: #666;
+            margin-top: 15px;
+            display: block;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #aaa;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            background-color: #555;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #666;
+        }
+
+        button i {
+            margin-right: 8px;
+        }
+
+        .confirm-delete {
+            display: none;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* Tarjetas de delivery */
+        .card {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .card p {
+            color: #777;
+        }
+
+        /* Estilo para el historial de deliverys */
+        .historial {
+            margin-top: 60px;
+            border-top: 4px solid #555;
+            padding-top: 30px;
+        }
+
+        .historial-item {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* Pie de página con copyright */
+        .footer {
+            width: 100%;
+            text-align: center;
+            padding: 15px 0;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            bottom: 0;
+        }
+
+        /* Diseño responsivo */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado con logo -->
+    <div class="header">
+        <img src="logo.png" alt="Logo Delivery Express">
+    </div>
+
+    <!-- Contenedor principal -->
+    <div class="container">
+        <h1>Registro de Delivery</h1>
+
+        <!-- Formulario de delivery -->
+        <div>
+            <label><i class="fas fa-tag"></i> Referencia:</label>
+            <input type="text" id="referencia" placeholder="Referencia del delivery">
+
+            <label><i class="fas fa-user"></i> Referencia del Cliente:</label>
+            <input type="text" id="referenciaCliente" placeholder="Referencia del cliente">
+
+            <label><i class="fas fa-dollar-sign"></i> Costo del Delivery (C$):</label>
+            <input type="number" id="costo" placeholder="Costo en C$">
+
+            <label><i class="fas fa-motorcycle"></i> Seleccionar Motorizado:</label>
+            <select id="motorizadoSelect">
+                <option value="">-- Selecciona un Motorizado --</option>
+            </select>
+            <input type="text" id="nuevoMotorizado" placeholder="Agregar nuevo motorizado">
+            <button onclick="agregarMotorizado()"><i class="fas fa-plus"></i> Agregar Motorizado</button>
+
+            <label><i class="fas fa-truck"></i> Tipo de Delivery:</label>
+            <select id="tipoDelivery">
+                <option value="Normal">Delivery Normal</option>
+                <option value="Promo">Delivery Promo</option>
+                <option value="Gratis">Delivery Gratis</option>
+            </select>
+
+            <button onclick="registrarDelivery()"><i class="fas fa-save"></i> Registrar Delivery</button>
+
+            <label><i class="fas fa-share-square"></i> Seleccionar Delivery para enviar:</label>
+            <select id="deliverySelect" onchange="mostrarBotonWhatsApp()">
+                <option value="">-- Selecciona un Delivery --</option>
+            </select>
+            <button id="whatsappButton" onclick="enviarWhatsApp()" style="display:none;"><i class="fab fa-whatsapp"></i> Enviar por WhatsApp</button>
+        </div>
+
+        <div class="confirm-delete" id="confirmDelete">
+            <p>¿Está seguro de eliminar todos los registros?</p>
+            <button onclick="limpiarDeliverys()">Sí</button>
+            <button onclick="cancelarEliminar()">No</button>
+        </div>
+
+        <!-- Contenedor de tarjetas de deliverys por motorizado -->
+        <div id="deliverysContainer"></div>
+
+        <!-- Sección de historial de deliverys -->
+        <div class="historial" id="historial">
+            <h2>Historial de Deliverys</h2>
+            <div id="historialContainer"></div>
+        </div>
+
+        <button onclick="confirmarEliminar()"><i class="fas fa-trash-alt"></i> Limpiar Todos los Deliverys</button>
+        <button onclick="limpiarHistorial()"><i class="fas fa-history"></i> Limpiar Historial</button>
+    </div>
+
+    <!-- Pie de página -->
+    <div class="footer">
+        <p>&copy; Carlo Berry - Creador</p>
+    </div>
+
+    <script>
+        // Función para cargar deliverys desde el localStorage
+        function cargarDeliverys() {
+            const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+            document.getElementById("deliverysContainer").innerHTML = "";
+            const deliverySelect = document.getElementById("deliverySelect");
+            deliverySelect.innerHTML = '<option value="">-- Selecciona un Delivery --</option>'; // Reiniciar el selector
+
+            for (let motorizado in deliverys) {
+                const deliverysMotorizado = deliverys[motorizado];
+                let normalCount = 0, promoCount = 0, gratisCount = 0;
+                let normalTotal = 0, promoTotal = 0, gratisTotal = 0;
+
+                deliverysMotorizado.forEach((delivery, index) => {
+                    if (delivery.tipo === "Normal") {
+                        normalCount++;
+                        normalTotal += delivery.costo;
+                    } else if (delivery.tipo === "Promo") {
+                        promoCount++;
+                        promoTotal += delivery.costo;
+                    } else if (delivery.tipo === "Gratis") {
+                        gratisCount++;
+                        gratisTotal += delivery.costo;
+                    }
+
+                    // Añadir opciones al selector
+                    const option = document.createElement("option");
+                    option.value = `${motorizado}|${index}`; // Almacenar motorizado y el índice del delivery
+                    option.textContent = `${delivery.referencia} - C$ ${delivery.costo} (${delivery.tipo})`;
+                    deliverySelect.appendChild(option);
+                });
+
+                // Crear tarjetas para cada motorizado
+                let card = `<div class="card">
+                    <h3>${motorizado}</h3>
+                    <p><strong>Delivery Normal:</strong> ${normalCount} (C$ ${normalTotal.toFixed(2)})</p>
+                    <p><strong>Delivery Promo:</strong> ${promoCount} (C$ ${promoTotal.toFixed(2)})</p>
+                    <p><strong>Delivery Gratis:</strong> ${gratisCount} (C$ ${gratisTotal.toFixed(2)})</p>
+                </div>`;
+
+                document.getElementById("deliverysContainer").innerHTML += card;
+            }
+
+            // Actualizar el selector de motorizados
+            const motorizadoSelect = document.getElementById("motorizadoSelect");
+            motorizadoSelect.innerHTML = '<option value="">-- Selecciona un Motorizado --</option>'; // Reiniciar el selector
+            for (let motorizado in deliverys) {
+                const option = document.createElement("option");
+                option.value = motorizado;
+                option.textContent = motorizado;
+                motorizadoSelect.appendChild(option);
+            }
+        }
+
+        // Función para registrar un delivery
+        function registrarDelivery() {
+            const referencia = document.getElementById("referencia").value;
+            const referenciaCliente = document.getElementById("referenciaCliente").value;
+            const costo = parseFloat(document.getElementById("costo").value);
+            const motorizado = document.getElementById("motorizadoSelect").value;
+            const tipoDelivery = document.getElementById("tipoDelivery").value;
+
+            if (!referencia || !referenciaCliente || isNaN(costo) || !motorizado || !tipoDelivery) {
+                alert("Por favor, complete todos los campos.");
+                return;
+            }
+
+            const delivery = { referencia, referenciaCliente, costo, tipo: tipoDelivery };
+            const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+
+            if (!deliverys[motorizado]) deliverys[motorizado] = [];
+            deliverys[motorizado].push(delivery);
+
+            localStorage.setItem("deliverys", JSON.stringify(deliverys));
+            cargarDeliverys(); // Cargar deliverys para refrescar el selector
+            agregarHistorial(delivery, motorizado); // Agregar al historial con el motorizado
+        }
+
+        // Función para agregar un motorizado
+        function agregarMotorizado() {
+            const motorizado = document.getElementById("nuevoMotorizado").value;
+            if (!motorizado) {
+                alert("Por favor, ingrese un nombre de motorizado.");
+                return;
+            }
+
+            const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+            if (!deliverys[motorizado]) {
+                deliverys[motorizado] = [];
+                localStorage.setItem("deliverys", JSON.stringify(deliverys));
+                alert("Motorizado agregado exitosamente.");
+            } else {
+                alert("Este motorizado ya existe.");
+            }
+
+            document.getElementById("nuevoMotorizado").value = ""; // Limpiar el campo
+            cargarDeliverys(); // Actualizar el selector de motorizados
+        }
+
+        // Función para enviar datos por WhatsApp
+        function enviarWhatsApp() {
+            const selectedValue = document.getElementById("deliverySelect").value;
+            if (!selectedValue) {
+                alert("Por favor, selecciona un delivery para enviar.");
+                return;
+            }
+
+            const [motorizado, index] = selectedValue.split('|');
+            const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+            const delivery = deliverys[motorizado][index];
+
+            const message = `Nuevo Delivery:\nReferencia: ${delivery.referencia}\nReferencia del Cliente: ${delivery.referenciaCliente}\nCosto: C$ ${delivery.costo}\nMotorizado: ${motorizado}\nTipo: ${delivery.tipo}`;
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function mostrarBotonWhatsApp() {
+            const deliverySelect = document.getElementById("deliverySelect");
+            document.getElementById("whatsappButton").style.display = deliverySelect.value ? "block" : "none";
+        }
+
+        // Función para agregar al historial
+        function agregarHistorial(delivery, motorizado) {
+            const historial = JSON.parse(localStorage.getItem("historial")) || [];
+            const historialItem = {
+                referencia: delivery.referencia,
+                referenciaCliente: delivery.referenciaCliente,
+                costo: delivery.costo,
+                tipo: delivery.tipo,
+                motorizado: motorizado,
+                fecha: new Date().toLocaleString()
+            };
+            historial.push(historialItem);
+            localStorage.setItem("historial", JSON.stringify(historial));
+            cargarHistorial();
+        }
+
+        // Función para cargar el historial desde el localStorage
+        function cargarHistorial() {
+            const historial = JSON.parse(localStorage.getItem("historial")) || [];
+            const historialContainer = document.getElementById("historialContainer");
+            historialContainer.innerHTML = ""; // Limpiar el historial
+            historial.forEach(item => {
+                const historialDiv = document.createElement("div");
+                historialDiv.classList.add("historial-item");
+                historialDiv.textContent = `Referencia: ${item.referencia}, Referencia del Cliente: ${item.referenciaCliente}, Costo: C$ ${item.costo}, Tipo: ${item.tipo}, Motorizado: ${item.motorizado}, Fecha: ${item.fecha}`;
+                historialContainer.appendChild(historialDiv);
+            });
+        }
+
+        // Función para confirmar eliminación de datos
+        function confirmarEliminar() {
+            document.getElementById("confirmDelete").style.display = "block";
+        }
+
+        // Función para cancelar la eliminación de datos
+        function cancelarEliminar() {
+            document.getElementById("confirmDelete").style.display = "none";
+        }
+
+        // Función para limpiar todos los deliverys
+        function limpiarDeliverys() {
+            localStorage.removeItem("deliverys");
+            document.getElementById("confirmDelete").style.display = "none";
+            cargarDeliverys();
+        }
+
+        // Función para limpiar el historial
+        function limpiarHistorial() {
+            localStorage.removeItem("historial");
+            const historialContainer = document.getElementById("historialContainer");
+            historialContainer.innerHTML = ""; // Limpiar el historial
+        }
+
+        // Cargar deliverys y el historial al iniciar
+        cargarDeliverys();
+        cargarHistorial();
+    </script>
+</body>
+</html>
+
