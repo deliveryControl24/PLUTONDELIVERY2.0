@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delivery PLUTON - Registro de Delivery</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         /* Estilos generales y apariencia mejorada */
         body {
@@ -76,7 +77,7 @@
             background-color: #555;
         }
 
-        .confirm-delete, .confirm-clear-history {
+        .confirm-delete, .confirm-clear-history, .confirm-cierre-caja, .confirm-limpiar-caja {
             display: none;
             background-color: #f8d7da;
             color: #721c24;
@@ -120,12 +121,28 @@
         .footer {
             width: 100%;
             text-align: center;
-            padding: 2px 0; /* Reducir aún más el padding */
+            padding: 2px 0; /* Reducir el padding */
             background-color: #333;
             color: white;
             position: fixed;
             bottom: 0;
-            font-size: 10px; /* Reducir aún más el tamaño de la fuente */
+            font-size: 8px; /* Reducir el tamaño de la fuente */
+        }
+
+        /* Estilo para la sección de cierre de caja */
+        .cierre-caja {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        /* Estilo para los iconos */
+        .icon {
+            font-size: 18px;
+            color: #757575;
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -137,27 +154,27 @@
 
     <!-- Contenedor principal -->
     <div class="container">
-        <h1>Registro de Delivery</h1>
+        <h1><span class="icon material-icons">local_shipping</span> Registro de Delivery</h1>
 
         <!-- Formulario de delivery -->
         <div>
-            <label>Referencia:</label>
+            <label><span class="icon material-icons">description</span> Referencia:</label>
             <input type="text" id="referencia" placeholder="Referencia del delivery">
 
-            <label>Referencia de usuario:</label>
-            <input type="text" id="referenciaUsuario" placeholder="Referencia del usuario">
+            <label><span class="icon material-icons">person</span> Referencia del cliente:</label>
+            <input type="text" id="referenciaUsuario" placeholder="Referencia del cliente">
 
-            <label>Costo del Delivery (C$):</label>
+            <label><span class="icon material-icons">attach_money</span> Costo del Delivery (C$):</label>
             <input type="number" id="costo" placeholder="Costo en C$">
 
-            <label>Seleccionar Motorizado:</label>
+            <label><span class="icon material-icons">directions_bike</span> Seleccionar Motorizado:</label>
             <select id="motorizadoSelect">
                 <option value="">-- Selecciona un Motorizado --</option>
             </select>
             <input type="text" id="nuevoMotorizado" placeholder="Agregar nuevo motorizado">
             <button onclick="agregarMotorizado()">Agregar Motorizado</button>
 
-            <label>Tipo de Delivery:</label>
+            <label><span class="icon material-icons">local_offer</span> Tipo de Delivery:</label>
             <select id="tipoDelivery">
                 <option value="Normal">Delivery Normal</option>
                 <option value="Promo">Delivery Promo</option>
@@ -166,7 +183,7 @@
 
             <button onclick="registrarDelivery()">Registrar Delivery</button>
 
-            <label>Seleccionar Delivery para enviar:</label>
+            <label><span class="icon material-icons">send</span> Seleccionar Delivery para enviar:</label>
             <select id="deliverySelect" onchange="mostrarBotonWhatsApp()">
                 <option value="">-- Selecciona un Delivery --</option>
             </select>
@@ -185,17 +202,41 @@
             <button onclick="cancelarLimpiarHistorial()">No</button>
         </div>
 
+        <div class="confirm-cierre-caja" id="confirmCierreCaja">
+            <p>¿Deseas cerrar caja?</p>
+            <button onclick="realizarCierreCaja()">Sí</button>
+            <button onclick="cancelarCierreCaja()">No</button>
+        </div>
+
+        <div class="confirm-limpiar-caja" id="confirmLimpiarCaja">
+            <p>¿Estás seguro de limpiar la caja?</p>
+            <button onclick="limpiarCaja()">Sí</button>
+            <button onclick="cancelarLimpiarCaja()">No</button>
+        </div>
+
         <!-- Contenedor de tablas de deliverys por motorizado -->
         <div id="deliverysContainer"></div>
 
         <!-- Sección de historial de deliverys -->
         <div class="historial" id="historial">
-            <h2>Historial de Deliverys</h2>
+            <h2><span class="icon material-icons">history</span> Historial de Deliverys</h2>
             <div id="historialContainer"></div>
         </div>
 
         <button onclick="confirmarEliminar()">Limpiar Todos los Deliverys</button>
         <button onclick="mostrarConfirmarLimpiarHistorial()">Limpiar Historial</button>
+
+        <!-- Botón de cierre de caja -->
+        <button class="btn-cierre-caja" onclick="mostrarConfirmarCierreCaja()">Cierre de Caja</button>
+
+        <!-- Botón de limpiar caja -->
+        <button class="btn-cierre-caja" onclick="mostrarConfirmarLimpiarCaja()">Limpiar Caja</button>
+
+        <!-- Sección de cierre de caja -->
+        <div class="cierre-caja" id="cierreCajaContainer" style="display: none;">
+            <h2><span class="icon material-icons">attach_money</span> Cierre de Caja</h2>
+            <div id="cierreCajaResultados"></div>
+        </div>
     </div>
 
     <!-- Pie de página -->
@@ -204,10 +245,13 @@
     </div>
 
     <script>
-        // Función para cargar deliverys desde el localStorage
-        function cargarDeliverys() {
+        // Función para cargar deliverys y el historial desde el localStorage
+        function cargarDatos() {
             const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+            const historial = JSON.parse(localStorage.getItem("historial")) || [];
+
             document.getElementById("deliverysContainer").innerHTML = "";
+            document.getElementById("historialContainer").innerHTML = "";
             const deliverySelect = document.getElementById("deliverySelect");
             deliverySelect.innerHTML = '<option value="">-- Selecciona un Delivery --</option>'; // Reiniciar el selector
 
@@ -254,30 +298,44 @@
                 option.textContent = motorizado;
                 motorizadoSelect.appendChild(option);
             }
+
+            // Cargar el historial
+            historial.forEach(item => {
+                const historialItem = document.createElement("div");
+                historialItem.textContent = item;
+                document.getElementById("historialContainer").appendChild(historialItem);
+            });
         }
 
         // Función para registrar un delivery
         function registrarDelivery() {
             const referencia = document.getElementById("referencia").value;
-            const referenciaUsuario = document.getElementById("referenciaUsuario").value;
+            const referenciaCliente = document.getElementById("referenciaUsuario").value;
             const costo = parseFloat(document.getElementById("costo").value);
             const motorizado = document.getElementById("motorizadoSelect").value;
             const tipoDelivery = document.getElementById("tipoDelivery").value;
 
-            if (!referencia || !referenciaUsuario || isNaN(costo) || !motorizado || !tipoDelivery) {
+            if (!referencia || !referenciaCliente || isNaN(costo) || !motorizado || !tipoDelivery) {
                 alert("Por favor, complete todos los campos.");
                 return;
             }
 
-            const delivery = { referencia, referenciaUsuario, costo, tipo: tipoDelivery };
+            const delivery = { referencia, referenciaCliente, costo, tipo: tipoDelivery };
             const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
 
             if (!deliverys[motorizado]) deliverys[motorizado] = [];
             deliverys[motorizado].push(delivery);
 
             localStorage.setItem("deliverys", JSON.stringify(deliverys));
-            cargarDeliverys(); // Cargar deliverys para refrescar el selector
+            cargarDatos(); // Cargar deliverys para refrescar el selector
             agregarHistorial(delivery, motorizado); // Agregar al historial con el motorizado
+
+            // Limpiar los campos del formulario
+            document.getElementById("referencia").value = "";
+            document.getElementById("referenciaUsuario").value = "";
+            document.getElementById("costo").value = "";
+            document.getElementById("motorizadoSelect").value = "";
+            document.getElementById("tipoDelivery").value = "Normal";
         }
 
         // Función para agregar un motorizado
@@ -298,7 +356,7 @@
             }
 
             document.getElementById("nuevoMotorizado").value = ""; // Limpiar el campo
-            cargarDeliverys(); // Actualizar el selector de motorizados
+            cargarDatos(); // Actualizar el selector de motorizados
         }
 
         // Función para enviar datos por WhatsApp
@@ -313,7 +371,7 @@
             const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
             const delivery = deliverys[motorizado][index];
 
-            const message = `Nuevo Delivery:\nReferencia: ${delivery.referencia}\nReferencia de usuario: ${delivery.referenciaUsuario}\nCosto: C$ ${delivery.costo}\nMotorizado: ${motorizado}\nTipo: ${delivery.tipo}`;
+            const message = `Nuevo Delivery:\nReferencia: ${delivery.referencia}\nReferencia del cliente: ${delivery.referenciaCliente}\nCosto: C$ ${delivery.costo}\nMotorizado: ${motorizado}\nTipo: ${delivery.tipo}`;
             const encodedMessage = encodeURIComponent(message);
             const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
 
@@ -327,10 +385,11 @@
 
         // Función para agregar al historial
         function agregarHistorial(delivery, motorizado) {
-            const historialContainer = document.getElementById("historialContainer");
-            const historialItem = document.createElement("div");
-            historialItem.textContent = `Referencia: ${delivery.referencia}, Referencia de usuario: ${delivery.referenciaUsuario}, Costo: C$ ${delivery.costo}, Tipo: ${delivery.tipo} (Motorizado: ${motorizado})`;
-            historialContainer.appendChild(historialItem);
+            const historial = JSON.parse(localStorage.getItem("historial")) || [];
+            const historialItem = `Referencia: ${delivery.referencia}, Referencia del cliente: ${delivery.referenciaCliente}, Costo: C$ ${delivery.costo}, Tipo: ${delivery.tipo} (Motorizado: ${motorizado})`;
+            historial.push(historialItem);
+            localStorage.setItem("historial", JSON.stringify(historial));
+            cargarDatos(); // Recargar datos para actualizar el historial
         }
 
         // Función para confirmar eliminación de datos
@@ -346,8 +405,9 @@
         // Función para limpiar todos los deliverys
         function limpiarDeliverys() {
             localStorage.removeItem("deliverys");
+            localStorage.removeItem("historial");
             document.getElementById("confirmDelete").style.display = "none";
-            cargarDeliverys();
+            cargarDatos();
         }
 
         // Función para mostrar confirmación de limpiar historial
@@ -357,9 +417,9 @@
 
         // Función para confirmar limpiar historial
         function confirmarLimpiarHistorial() {
-            const historialContainer = document.getElementById("historialContainer");
-            historialContainer.innerHTML = ""; // Limpiar el historial
+            localStorage.removeItem("historial");
             document.getElementById("confirmClearHistory").style.display = "none";
+            cargarDatos();
         }
 
         // Función para cancelar limpiar historial
@@ -367,8 +427,63 @@
             document.getElementById("confirmClearHistory").style.display = "none";
         }
 
-        // Cargar deliverys al iniciar
-        cargarDeliverys();
+        // Función para mostrar confirmación de cierre de caja
+        function mostrarConfirmarCierreCaja() {
+            document.getElementById("confirmCierreCaja").style.display = "block";
+        }
+
+        // Función para cancelar cierre de caja
+        function cancelarCierreCaja() {
+            document.getElementById("confirmCierreCaja").style.display = "none";
+        }
+
+        // Función para realizar el cierre de caja
+        function realizarCierreCaja() {
+            calcularCierreCaja();
+            document.getElementById("confirmCierreCaja").style.display = "none";
+        }
+
+        // Función para calcular el cierre de caja
+        function calcularCierreCaja() {
+            const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+            let resultados = "";
+
+            for (let motorizado in deliverys) {
+                const deliverysMotorizado = deliverys[motorizado];
+                let total = 0;
+
+                deliverysMotorizado.forEach(delivery => {
+                    total += delivery.costo;
+                });
+
+                resultados += `<p>${motorizado}: C$ ${total.toFixed(2)}</p>`;
+            }
+
+            document.getElementById("cierreCajaResultados").innerHTML = resultados;
+            document.getElementById("cierreCajaContainer").style.display = "block";
+        }
+
+        // Función para mostrar confirmación de limpiar caja
+        function mostrarConfirmarLimpiarCaja() {
+            document.getElementById("confirmLimpiarCaja").style.display = "block";
+        }
+
+        // Función para cancelar limpiar caja
+        function cancelarLimpiarCaja() {
+            document.getElementById("confirmLimpiarCaja").style.display = "none";
+        }
+
+        // Función para limpiar caja
+        function limpiarCaja() {
+            localStorage.removeItem("deliverys");
+            localStorage.removeItem("historial");
+            document.getElementById("confirmLimpiarCaja").style.display = "none";
+            cargarDatos();
+            document.getElementById("cierreCajaContainer").style.display = "none";
+        }
+
+        // Cargar datos al iniciar
+        cargarDatos();
     </script>
 </body>
 </html>
